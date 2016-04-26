@@ -8,7 +8,7 @@
     tools:context="com.chatty.android.chatty.MainActivity">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,13 +23,12 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/channels"
-        android:layout_below="@id/mainToolbar"
-        />
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/channels"
+            android:layout_alignParentEnd="false"
+            android:layout_below="@id/mainToolbar"/>
     </RelativeLayout>
     <include layout="@layout/content_main" />
 

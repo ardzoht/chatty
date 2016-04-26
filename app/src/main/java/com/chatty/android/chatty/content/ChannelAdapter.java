@@ -1,44 +1,76 @@
 package com.chatty.android.chatty.content;
 
+import android.animation.LayoutTransition;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.chatty.android.chatty.R;
+
 import java.util.List;
 
 /**
  * Created by Alejandro on 25/04/2016.
  */
-public class ChannelAdapter<T> extends ArrayAdapter<T> {
+public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.Holder>{
 
-    public ChannelAdapter(Context context, List<T> objects) {
-        super(context, 0, objects);
+
+    List<Channel> channels;
+
+    @Override
+    public Holder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.channel_list_item, parent, false);
+        v.getLayoutParams().height = RecyclerView.LayoutParams.WRAP_CONTENT;
+        return new Holder(v);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public void onBindViewHolder(Holder holder, int position) {
+        holder.title.setText(channels.get(position).getName());
+        holder.description.setText(channels.get(position).getDescription());
+    }
 
-        View listItem = convertView;
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+    }
 
-        if(null == convertView) {
-            listItem = inflater.inflate(
-                    android.R.layout.simple_expandable_list_item_2,
-                    parent,
-                    false);
+    @Override
+    public int getItemCount() {
+        return channels.size();
+    }
+
+    public static class Holder extends RecyclerView.ViewHolder {
+        CardView cv;
+        TextView title;
+        TextView description;
+
+
+        Holder(final View itemView) {
+            super(itemView);
+            cv = (CardView) itemView.findViewById(R.id.cardview);
+            title = (TextView) itemView.findViewById(R.id.textTitle);
+            description = (TextView) itemView.findViewById(R.id.textDescription);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String itemPos = title.getText().toString();
+                    Log.d("RecyclerView", "Clicked: " + itemPos);
+                }
+            });
         }
 
-        TextView channelTitle = (TextView)listItem.findViewById(android.R.id.text1);
-        TextView channelDescription = (TextView)listItem.findViewById(android.R.id.text2);
-
-        Channel item = (Channel) getItem(position);
-
-        channelTitle.setText(item.getName());
-        channelDescription.setText(item.getDescription());
-
-        return listItem;
     }
+
+    public ChannelAdapter(List<Channel> channels) {
+        this.channels = channels;
+    }
+
 }

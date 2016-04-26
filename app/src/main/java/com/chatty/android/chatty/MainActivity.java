@@ -1,10 +1,14 @@
 package com.chatty.android.chatty;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
@@ -24,8 +28,8 @@ import org.json.*;
 public class MainActivity extends AppCompatActivity {
 
     Pubnub pubnub;
-    ListView channelList;
-    ArrayAdapter adapter;
+    RecyclerView channelList;
+    ChannelAdapter adapter;
     String currentChannel;
 
 
@@ -38,9 +42,10 @@ public class MainActivity extends AppCompatActivity {
         PubnubInit();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        channelList = (ListView) findViewById(R.id.channels);
+        channelList = (RecyclerView) findViewById(R.id.channels);
+        channelList.setHasFixedSize(true);
 
-        initValues();
+        initValues(getApplicationContext());
 
         if (fab != null) {
             fab.setOnClickListener(new View.OnClickListener() {
@@ -60,18 +65,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initValues() {
-        adapter = new ChannelAdapter<Channel>(this, DataSource.Channels);
+    private void initValues(Context context) {
+        LinearLayoutManager llm = new LinearLayoutManager(context);
+        channelList.setLayoutManager(llm);
+        adapter = new ChannelAdapter(DataSource.Channels);
         channelList.setAdapter(adapter);
-        channelList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Channel channelSelected = (Channel)adapter.getItem(position);
-                currentChannel = channelSelected.getName();
-                Toast.makeText(view.getContext(), currentChannel, Toast.LENGTH_LONG).show();
-
-            }
-        });
     }
 
     private void PubnubInit() {
