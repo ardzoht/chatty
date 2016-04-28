@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.chatty.android.chatty.content.Channel;
 import com.chatty.android.chatty.content.ChannelAdapter;
 import com.chatty.android.chatty.content.DataSource;
+import com.chatty.android.chatty.interfaces.RESTConsume;
 import com.pubnub.api.*;
 import org.json.*;
 
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void successCallback(String channel, Object message) {
                             System.out.println("Sent: " + message.toString());
+                            RESTConsume.getInstance().authorizeUser();
                         }
                         public void errorCallback(String channel, PubnubError error) {
                             System.out.println("Error: " + error.toString());
