@@ -1,9 +1,12 @@
 package com.chatty.android.chatty.interfaces;
 
+import android.content.Context;
+import android.inputmethodservice.Keyboard;
 import android.util.Log;
 
 import com.chatty.android.chatty.content.TokenDTO;
 import com.chatty.android.chatty.content.UserDTO;
+import com.chatty.android.chatty.utilities.KeyStore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -55,15 +58,22 @@ public class RESTConsume {
 
     }
 
-    public void authorizeUser() {
-        Call<TokenDTO> call = apiService.authUser(userTest);
+    public void authorizeUser(String email, String password) {
+        UserDTO user = new UserDTO(email, password);
+        Call<TokenDTO> call = apiService.authUser(user);
         call.enqueue(new Callback<TokenDTO>() {
             @Override
             public void onResponse(Call<TokenDTO> call, Response<TokenDTO> response) {
                 int statusCode = response.code();
                 token = response.body();
+
                 Log.d("Success", String.valueOf(statusCode));
-                Log.d("Token Received", token.getToken());
+                try {
+                    KeyStore.getInstance().setKey(token.getToken());
+                }
+                catch(NullPointerException e) {
+                    Log.d("Error", "No user, dude");
+                }
             }
 
             @Override

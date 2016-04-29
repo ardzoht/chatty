@@ -10,9 +10,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewAnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -23,6 +25,7 @@ import com.chatty.android.chatty.content.Channel;
 import com.chatty.android.chatty.content.ChannelAdapter;
 import com.chatty.android.chatty.content.DataSource;
 import com.chatty.android.chatty.interfaces.RESTConsume;
+import com.chatty.android.chatty.utilities.KeyStore;
 import com.pubnub.api.*;
 import org.json.*;
 
@@ -56,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void successCallback(String channel, Object message) {
                             System.out.println("Sent: " + message.toString());
-                            RESTConsume.getInstance().authorizeUser();
                         }
                         public void errorCallback(String channel, PubnubError error) {
                             System.out.println("Error: " + error.toString());
