@@ -2,10 +2,12 @@ package com.chatty.android.chatty.interfaces;
 
 import android.content.Context;
 import android.inputmethodservice.Keyboard;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.chatty.android.chatty.content.TokenDTO;
 import com.chatty.android.chatty.content.UserDTO;
+import com.chatty.android.chatty.utilities.Callbacks;
 import com.chatty.android.chatty.utilities.KeyStore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -58,27 +60,32 @@ public class RESTConsume {
 
     }
 
-    public void authorizeUser(String email, String password) {
+    public void authorizeUser(String email, String password, @Nullable final Callbacks.ChatCallback<String> callback) {
         UserDTO user = new UserDTO(email, password);
         Call<TokenDTO> call = apiService.authUser(user);
         call.enqueue(new Callback<TokenDTO>() {
             @Override
             public void onResponse(Call<TokenDTO> call, Response<TokenDTO> response) {
-                int statusCode = response.code();
                 token = response.body();
 
-                Log.d("Success", String.valueOf(statusCode));
                 try {
                     KeyStore.getInstance().setKey(token.getToken());
+                    if (callback != null) {
+                        callback.onSuccess(token.getToken());
+                    }
                 }
                 catch(NullPointerException e) {
-                    Log.d("Error", "No user, dude");
+                    if (callback != null) {
+                        callback.onFailure("Access denied.");
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<TokenDTO> call, Throwable t) {
-                Log.d("Error", "There has been an error bro.");
+                if (callback != null) {
+                    callback.onFailure(t.getMessage());
+                }
             }
         });
     }
