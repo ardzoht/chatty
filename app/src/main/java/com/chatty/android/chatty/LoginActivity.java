@@ -1,13 +1,16 @@
 package com.chatty.android.chatty;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.chatty.android.chatty.interfaces.RESTConsume;
 import com.chatty.android.chatty.utilities.Callbacks;
@@ -21,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordText;
     private EditText emailText;
     private Button loginButton;
+    private ProgressDialog loadingDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,12 +34,19 @@ public class LoginActivity extends AppCompatActivity {
         emailText = (EditText) findViewById(R.id.emailText);
         passwordText = (EditText) findViewById(R.id.passwordText);
         loginButton = (Button) findViewById(R.id.button);
+        loadDialog();
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!loadingDialog.isShowing()) loadingDialog.show();
+
                 RESTConsume.getInstance().authorizeUser(emailText.getText().toString(), passwordText.getText().toString(), new Callbacks.ChatCallback<String>() {
                     @Override
                     public void onSuccess(String response) {
+                        if(loadingDialog.isShowing()) loadingDialog.dismiss();
+
                         KeyStore.getInstance().setKey(response);
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
@@ -43,7 +54,9 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(String error) {
-                        Log.d("Error", error);
+
+                        if(loadingDialog.isShowing()) loadingDialog.dismiss();
+                        Toast.makeText(getApplicationContext(), "Access denied", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -60,5 +73,13 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    private void loadDialog() {
+        loadingDialog = new ProgressDialog(this);
+        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        loadingDialog.setMessage("Loading. Please wait...");
+        loadingDialog.setIndeterminate(true);
+        loadingDialog.setCanceledOnTouchOutside(false);
     }
 }
