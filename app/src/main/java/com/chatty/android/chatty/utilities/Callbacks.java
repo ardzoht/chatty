@@ -11,4 +11,7 @@ public class Callbacks {
         public void onFailure(String error);
     }
 
+    public interface CallbackChannel {
+        void onChannelPressed(String channelTitle);
+    }
 }

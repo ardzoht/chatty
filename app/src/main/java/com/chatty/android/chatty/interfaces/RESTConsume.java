@@ -25,13 +25,13 @@ import retrofit2.http.POST;
  */
 public class RESTConsume {
 
+    private final String BASE_URL = "http://52.205.251.33:9000/";
     private Gson gson;
     private Retrofit restConsumer;
     private RESTInterface apiService;
-    private UserDTO userTest;
     private TokenDTO token;
 
-    private static interface RESTInterface {
+    private interface RESTInterface {
 
         @POST("/auth/local")
         Call<TokenDTO> authUser(@Body UserDTO user);
@@ -49,14 +49,12 @@ public class RESTConsume {
                 .create();
 
         restConsumer = new Retrofit.Builder()
-                .baseUrl("http://52.205.251.33:9000/")
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         apiService = restConsumer.create(RESTInterface.class);
 
-        // Create testing user
-        userTest = new UserDTO("test@example.com", "test");
 
     }
 
