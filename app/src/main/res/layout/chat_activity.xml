@@ -12,15 +12,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/messageText"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@+id/button2"
-            android:inputType="textAutoComplete"/>
+            android:inputType="textAutoComplete"
+            android:layout_above="@+id/importantToggle"
+            android:layout_alignParentStart="true" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="SEND"
+            android:text="@string/send"
             android:id="@+id/button2"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true" />
@@ -32,5 +32,25 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_above="@+id/messageText" />
+
+        <ToggleButton
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:text="@string/normal"
+            android:id="@+id/importantToggle"
+            android:layout_alignTop="@+id/button2"
+            android:layout_toStartOf="@+id/button2"
+            android:textOff="Normal"
+            android:textOn="Important" />
+
+        <View android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:background="@drawable/circle"
+            android:layout_marginBottom="19dp"
+            android:layout_marginLeft="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/view" />
+
     </RelativeLayout>
 </LinearLayout>

@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.chatty.android.chatty.R;
 import com.chatty.android.chatty.content.MessagesAdapter;
@@ -39,8 +40,9 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView messagesList;
     private Pubnub pubnub;
     private String channelSelected;
-    private List<String> messages;
+    private List<JSONArray> messages;
     private MessagesAdapter messageAdapter;
+    private ToggleButton toggleImportant;
 
     @Nullable
     @Override
@@ -57,7 +59,10 @@ public class ChatActivity extends AppCompatActivity {
         messageText = (EditText) findViewById(R.id.messageText);
         sendButton = (Button) findViewById(R.id.button2);
         messagesList = (RecyclerView) findViewById(R.id.listMessages);
+        toggleImportant = (ToggleButton) findViewById(R.id.importantToggle);
         messagesList.setHasFixedSize(true);
+        toggleImportant.setTextOff("Normal");
+        toggleImportant.setTextOn("Important");
 
         initValues(getApplicationContext());
 
@@ -75,13 +80,13 @@ public class ChatActivity extends AppCompatActivity {
                 JSONArray array = new JSONArray();
                 try {
                     array.put(0, messageText.getText().toString());
-                    array.put(1, pubnub.uuid());
+                    array.put(1, KeyStore.getInstance().getUserId());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
                 if (messageText.getText().toString().trim().length() != 0) {
-                    pubnub.publish(channelSelected, messageText.getText().toString(), new Callback() {
+                    pubnub.publish(channelSelected, array, new Callback() {
                         @Override
                         public void successCallback(String channel, final Object message) {
                             runOnUiThread(new Runnable() {
@@ -119,7 +124,7 @@ public class ChatActivity extends AppCompatActivity {
             pubnub.subscribe(channelSelected, new Callback() {
                 @Override
                 public void successCallback(String channel, final Object message) {
-                    messages.add(message.toString());
+                    messages.add((JSONArray) message);
 
                     runOnUiThread(new Runnable() {
                         @Override

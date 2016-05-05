@@ -72,6 +72,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if(KeyStore.getInstance().getKey() != null) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
     }

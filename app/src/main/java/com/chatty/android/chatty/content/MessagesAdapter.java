@@ -1,13 +1,20 @@
 package com.chatty.android.chatty.content;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.chatty.android.chatty.R;
+import com.chatty.android.chatty.utilities.KeyStore;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.List;
 
@@ -16,9 +23,9 @@ import java.util.List;
  */
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Holder> {
 
-    private List<String> messages;
+    private List<JSONArray> messages;
 
-    public MessagesAdapter(List<String> messages) {
+    public MessagesAdapter(List<JSONArray> messages) {
 
         this.messages = messages;
     }
@@ -32,7 +39,14 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Holder
 
     @Override
     public void onBindViewHolder(Holder holder, int position) {
-        holder.messageText.setText(messages.get(position));
+        try {
+            holder.messageText.setText(messages.get(position).getString(0));
+            /*if(messages.get(position).getString(1).equals(KeyStore.getInstance().getUserId())) {
+                holder.messageText.setBackgroundColor(0xff1f901f);
+            }*/
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
