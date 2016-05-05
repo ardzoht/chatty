@@ -10,6 +10,7 @@ import android.os.StrictMode;
  */
 public class KeyStore {
     private String token;
+    private String userId;
 
     private static KeyStore ourInstance = new KeyStore();
 
@@ -27,5 +28,13 @@ public class KeyStore {
 
     public String getKey() {
         return token;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

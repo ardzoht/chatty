@@ -48,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
                         if(loadingDialog.isShowing()) loadingDialog.dismiss();
 
                         KeyStore.getInstance().setKey(response);
+                        KeyStore.getInstance().setUserId(emailText.getText().toString());
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                     }

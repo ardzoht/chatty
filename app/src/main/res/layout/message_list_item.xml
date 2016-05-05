@@ -8,6 +8,11 @@
         android:layout_height="wrap_content"
         android:text="Message"
         android:id="@+id/messageTextItem"
-        android:textColor="#000"
-        android:layout_margin="10dp"/>
+        android:textColor="#fff"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:background="#890e0e"
+        android:fontFamily="sans-terif-medium"
+        android:textStyle="bold"
+        />
 </LinearLayout>
