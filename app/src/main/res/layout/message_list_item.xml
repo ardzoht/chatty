@@ -11,7 +11,7 @@
         android:textColor="#fff"
         android:layout_margin="10dp"
         android:padding="10dp"
-        android:background="#890e0e"
+        android:background="#17a917"
         android:fontFamily="sans-terif-medium"
         android:textStyle="bold"
         />

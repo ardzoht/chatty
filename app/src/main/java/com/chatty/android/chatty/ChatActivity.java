@@ -1,8 +1,13 @@
 package com.chatty.android.chatty;
 
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +30,7 @@ import com.pubnub.api.PubnubException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.security.Key;
 import java.util.ArrayList;
@@ -40,9 +46,10 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView messagesList;
     private Pubnub pubnub;
     private String channelSelected;
-    private List<JSONArray> messages;
+    private List<JSONObject> messages;
     private MessagesAdapter messageAdapter;
     private ToggleButton toggleImportant;
+    private Button presenceButton;
 
     @Nullable
     @Override
@@ -60,6 +67,8 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = (Button) findViewById(R.id.button2);
         messagesList = (RecyclerView) findViewById(R.id.listMessages);
         toggleImportant = (ToggleButton) findViewById(R.id.importantToggle);
+        presenceButton = (Button) findViewById(R.id.button3);
+
         messagesList.setHasFixedSize(true);
         toggleImportant.setTextOff("Normal");
         toggleImportant.setTextOn("Important");
@@ -74,13 +83,43 @@ public class ChatActivity extends AppCompatActivity {
 
         PubnubInit();
 
+        presenceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pubnub.hereNow(channelSelected, new Callback() {
+                    @Override
+                    public void successCallback(String channel, Object message) {
+                        super.successCallback(channel, message);
+                        try {
+                            JSONObject response = (JSONObject) message;
+                            JSONArray users = (JSONArray) response.get("uuids");
+                            String[] arrayUsers = users.toString().replace("},{", " ,").split(" ");
+                            Intent i = new Intent(ChatActivity.this, PresenceActivity.class);
+                            i.putExtra("Users", arrayUsers);
+                            startActivity(i);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void errorCallback(String channel, PubnubError error) {
+                        super.errorCallback(channel, error);
+                        Log.d("Error", error.toString());
+                    }
+                });
+            }
+        });
+
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONArray array = new JSONArray();
+                String isImportant = toggleImportant.isChecked() ? "Important" : "Normal";
+                JSONObject array = new JSONObject();
                 try {
-                    array.put(0, messageText.getText().toString());
-                    array.put(1, KeyStore.getInstance().getUserId());
+                    array.put("message", messageText.getText().toString());
+                    array.put("important", isImportant);
+                    array.put("uuid", KeyStore.getInstance().getUserId());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -113,8 +152,21 @@ public class ChatActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setStackFromEnd(true);
         messagesList.setLayoutManager(llm);
-        messageAdapter = new MessagesAdapter(messages);
+        messageAdapter = new MessagesAdapter(messages, getApplicationContext());
         messagesList.setAdapter(messageAdapter);
+    }
+    private void notificate(String title, String message){
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.circle)
+                        .setContentTitle(title)
+                        .setContentText(message);
+        mBuilder.setSound(alarmSound);
+        int mNotificationId = 001;
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     private void PubnubInit() {
@@ -124,12 +176,21 @@ public class ChatActivity extends AppCompatActivity {
             pubnub.subscribe(channelSelected, new Callback() {
                 @Override
                 public void successCallback(String channel, final Object message) {
-                    messages.add((JSONArray) message);
+                    messages.add(messages.size(),(JSONObject) message);
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            messageAdapter.notifyDataSetChanged();
+                            messageAdapter.notifyItemChanged(messages.size());
+                            try {
+                                if(((JSONObject) message).getString("important").equals("Important"))
+                                {
+                                    if(!((JSONObject) message).getString("uuid").equals(KeyStore.getInstance().getUserId()))
+                                        notificate("Important Message", ((JSONObject) message).getString("message"));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                 }
@@ -152,6 +213,19 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void disconnectCallback(String channel, Object message) {
                     System.out.print("DISCONNECT " + channel + " : " + message.getClass() + " : " + message.toString() );
+                }
+            });
+            pubnub.presence(channelSelected, new Callback() {
+                @Override
+                public void successCallback(String channel, Object message) {
+                    super.successCallback(channel, message);
+                    Log.d("Event", "Connected to Presence");
+                }
+
+                @Override
+                public void errorCallback(String channel, PubnubError error) {
+                    super.errorCallback(channel, error);
+                    Log.d("Error", "Couldn't connect to Presence");
                 }
             });
         }
