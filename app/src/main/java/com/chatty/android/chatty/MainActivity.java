@@ -3,6 +3,7 @@ package com.chatty.android.chatty;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.security.keystore.KeyNotYetValidException;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,11 +16,11 @@ import android.view.MenuItem;
 import com.chatty.android.chatty.content.ChannelAdapter;
 import com.chatty.android.chatty.content.DataSource;
 import com.chatty.android.chatty.utilities.Callbacks;
-import com.pubnub.api.*;
+import com.chatty.android.chatty.utilities.KeyStore;
+
 
 public class MainActivity extends AppCompatActivity implements Callbacks.CallbackChannel{
 
-    Pubnub pubnub;
     RecyclerView channelList;
     ChannelAdapter adapter;
 
@@ -41,15 +42,7 @@ public class MainActivity extends AppCompatActivity implements Callbacks.Callbac
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    pubnub.publish("mainChannel", "What up", new Callback() {
-                        @Override
-                        public void successCallback(String channel, Object message) {
-                            System.out.println("Sent: " + message.toString());
-                        }
-                        public void errorCallback(String channel, PubnubError error) {
-                            System.out.println("Error: " + error.toString());
-                        }
-                    });
+
                 }
             });
         }
@@ -79,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements Callbacks.Callbac
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout) {
-            finish();
+            KeyStore.getInstance().setKey("");
+           finish();
         }
 
         return super.onOptionsItemSelected(item);

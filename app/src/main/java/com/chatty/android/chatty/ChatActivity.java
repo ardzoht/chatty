@@ -93,7 +93,10 @@ public class ChatActivity extends AppCompatActivity {
                         try {
                             JSONObject response = (JSONObject) message;
                             JSONArray users = (JSONArray) response.get("uuids");
-                            String[] arrayUsers = users.toString().replace("},{", " ,").split(" ");
+                            String[] arrayUsers = new String[users.length()];
+                            for(int i = 0;i<users.length();i++) {
+                                arrayUsers[i] =  users.getString(i);
+                            }
                             Intent i = new Intent(ChatActivity.this, PresenceActivity.class);
                             i.putExtra("Users", arrayUsers);
                             startActivity(i);
@@ -177,11 +180,10 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void successCallback(String channel, final Object message) {
                     messages.add(messages.size(),(JSONObject) message);
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            messageAdapter.notifyItemChanged(messages.size());
+                            messageAdapter.notifyItemInserted(messages.size());
                             try {
                                 if(((JSONObject) message).getString("important").equals("Important"))
                                 {

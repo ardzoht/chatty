@@ -14,4 +14,9 @@ public class Callbacks {
     public interface CallbackChannel {
         void onChannelPressed(String channelTitle);
     }
+
+    public interface CallbackFavorite {
+        void onUserPressed(String user);
+        void onUserAlreadyAdded();
+    }
 }
