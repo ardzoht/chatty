@@ -63,6 +63,7 @@ public class PresenceActivity extends Activity implements Callbacks.CallbackFavo
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         KeyStore.getInstance().addFavorite(user);
+
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {

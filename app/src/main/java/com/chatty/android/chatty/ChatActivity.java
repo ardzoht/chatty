@@ -3,6 +3,9 @@ package com.chatty.android.chatty;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +15,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -50,6 +54,13 @@ public class ChatActivity extends AppCompatActivity {
     private MessagesAdapter messageAdapter;
     private ToggleButton toggleImportant;
     private Button presenceButton;
+    private View status;
+    private int currentStatus = 0;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String Email = "emailKey";
+    private Button filter;
+    private int filterStatus = 0;
 
     @Nullable
     @Override
@@ -68,6 +79,9 @@ public class ChatActivity extends AppCompatActivity {
         messagesList = (RecyclerView) findViewById(R.id.listMessages);
         toggleImportant = (ToggleButton) findViewById(R.id.importantToggle);
         presenceButton = (Button) findViewById(R.id.button3);
+        status = (View) findViewById(R.id.view);
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        filter = (Button) findViewById(R.id.button4);
 
         messagesList.setHasFixedSize(true);
         toggleImportant.setTextOff("Normal");
@@ -82,6 +96,71 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         PubnubInit();
+
+        filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (filterStatus == 0) {
+                    filter.setText("Unfilter");
+                    filterStatus = 1;
+                    List<JSONObject> messagesFiltered = new ArrayList<JSONObject>();
+                    for (JSONObject message : messages) {
+                        try {
+                            if (message.getString("important").equals("Important")) {
+                                messagesFiltered.add(message);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    messageAdapter = new MessagesAdapter(messagesFiltered, getApplicationContext());
+                    messagesList.setAdapter(messageAdapter);
+                } else {
+                    filter.setText("Filterpr");
+                    filterStatus = 0;
+                    messageAdapter = new MessagesAdapter(messages, getApplicationContext());
+                    messagesList.setAdapter(messageAdapter);
+                }
+            }
+        });
+
+        status.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GradientDrawable bgShape = (GradientDrawable) status.getBackground();
+                JSONObject statusJson = new JSONObject();
+                if(currentStatus == 0) {
+                    bgShape.setColor(Color.YELLOW);
+                    currentStatus = 1;
+                    try {
+                        statusJson.put("status", "away");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    pubnub.setState(channelSelected, sharedpreferences.getString(Email, ""), statusJson, new Callback() {
+                        @Override
+                        public void successCallback(String channel, Object message) {
+                            super.successCallback(channel, message);
+                        }
+                    });
+                }
+                else {
+                    bgShape.setColor(Color.GREEN);
+                    currentStatus = 0;
+                    try {
+                        statusJson.put("status", "available");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    pubnub.setState(channelSelected, sharedpreferences.getString(Email, ""), statusJson, new Callback() {
+                        @Override
+                        public void successCallback(String channel, Object message) {
+                            super.successCallback(channel, message);
+                        }
+                    });
+                }
+            }
+        });
 
         presenceButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,7 +201,7 @@ public class ChatActivity extends AppCompatActivity {
                 try {
                     array.put("message", messageText.getText().toString());
                     array.put("important", isImportant);
-                    array.put("uuid", KeyStore.getInstance().getUserId());
+                    array.put("uuid", sharedpreferences.getString(Email, ""));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -146,6 +225,23 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        JSONObject statusJson = new JSONObject();
+        try {
+            statusJson.put("status", "disconnected");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        pubnub.setState(channelSelected, sharedpreferences.getString(Email, ""), statusJson, new Callback() {
+            @Override
+            public void successCallback(String channel, Object message) {
+                super.successCallback(channel, message);
             }
         });
     }
@@ -174,7 +270,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void PubnubInit() {
         pubnub = new Pubnub("pub-c-44383ebf-88ef-4845-b1c4-95d5efd0d3bf", "sub-c-c3f6e856-0802-11e6-a5b5-0619f8945a4f");
-        pubnub.setUUID(KeyStore.getInstance().getUserId());
+        pubnub.setUUID(sharedpreferences.getString(Email, ""));
         try {
             pubnub.subscribe(channelSelected, new Callback() {
                 @Override
@@ -187,7 +283,7 @@ public class ChatActivity extends AppCompatActivity {
                             try {
                                 if(((JSONObject) message).getString("important").equals("Important"))
                                 {
-                                    if(!((JSONObject) message).getString("uuid").equals(KeyStore.getInstance().getUserId()))
+                                    if(!((JSONObject) message).getString("uuid").equals(sharedpreferences.getString(Email, "")))
                                         notificate("Important Message", ((JSONObject) message).getString("message"));
                                 }
                             } catch (JSONException e) {
@@ -221,7 +317,21 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void successCallback(String channel, Object message) {
                     super.successCallback(channel, message);
-                    Log.d("Event", "Connected to Presence");
+                    JSONObject res = (JSONObject) message;
+                    try {
+                        if(!res.getString("uuid").equals(sharedpreferences.getString(Email, ""))) {
+                            if (res.getJSONObject("data").getString("status").equals("available"))
+                                notificate("A user has connected", res.getString("uuid"));
+                            else if (res.getJSONObject("data").getString("status").equals("away"))
+                                notificate("A user is away", res.getString("uuid"));
+                            else if (res.getJSONObject("data").getString("status").equals("disconnected"))
+                                notificate("A user has disconnected", res.getString("uuid"));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } {
+
+                    }
                 }
 
                 @Override

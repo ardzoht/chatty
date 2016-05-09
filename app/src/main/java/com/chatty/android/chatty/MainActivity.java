@@ -2,6 +2,7 @@ package com.chatty.android.chatty;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.security.keystore.KeyNotYetValidException;
 import android.support.design.widget.FloatingActionButton;
@@ -23,6 +24,9 @@ public class MainActivity extends AppCompatActivity implements Callbacks.Callbac
 
     RecyclerView channelList;
     ChannelAdapter adapter;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String Email = "emailKey";
 
 
     @Override
@@ -35,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements Callbacks.Callbac
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         channelList = (RecyclerView) findViewById(R.id.channels);
         channelList.setHasFixedSize(true);
-
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         initValues(getApplicationContext());
 
         if (fab != null) {
@@ -73,7 +77,12 @@ public class MainActivity extends AppCompatActivity implements Callbacks.Callbac
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout) {
             KeyStore.getInstance().setKey("");
+            sharedpreferences.edit().putString(Email, "").apply();
            finish();
+        }
+        else if(id == R.id.action_contact) {
+            Intent i = new Intent(MainActivity.this, ContactListActivity.class);
+            startActivity(i);
         }
 
         return super.onOptionsItemSelected(item);

@@ -1,7 +1,9 @@
 package com.chatty.android.chatty;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +27,9 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailText;
     private Button loginButton;
     private ProgressDialog loadingDialog;
+    private SharedPreferences sharedpreferences;
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String Email = "emailKey";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         emailText = (EditText) findViewById(R.id.emailText);
         passwordText = (EditText) findViewById(R.id.passwordText);
         loginButton = (Button) findViewById(R.id.button);
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         loadDialog();
 
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -46,9 +52,11 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String response) {
                         if(loadingDialog.isShowing()) loadingDialog.dismiss();
-
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
                         KeyStore.getInstance().setKey(response);
                         KeyStore.getInstance().setUserId(emailText.getText().toString());
+                        editor.putString(Email, emailText.getText().toString());
+                        editor.apply();
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                     }
@@ -74,6 +82,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if(!sharedpreferences.getString(Email, "").equals("")) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override

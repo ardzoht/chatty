@@ -6,4 +6,6 @@
     <string name="normal">Normal</string>
     <string name="send">SEND</string>
     <string name="presence">Presence</string>
+    <string name="contact_list">Contact List</string>
+    <string name="filter">filter</string>
 </resources>

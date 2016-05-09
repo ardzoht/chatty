@@ -35,6 +35,11 @@
             android:theme="@style/Theme.AppCompat">
 
         </activity>
+        <activity android:name=".ContactListActivity"
+            android:label="Chatty"
+            android:theme="@style/Theme.AppCompat">
+
+        </activity>
     </application>
 
 </manifest>
