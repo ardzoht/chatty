@@ -53,4 +53,5 @@ public class KeyStore {
     public void addFavorite(String user) {
         favorites.add(user);
     }
+
 }
